@@ -47,6 +47,7 @@ export async function ensureServer(opts = {}) {
     stdio: ["ignore", "pipe", "pipe"],
     detached: true,
     cwd: opts.cwd,
+    shell: process.platform === "win32",
   });
   proc.unref();
 

@@ -8,7 +8,8 @@ import { spawn } from "node:child_process";
  */
 export async function resolveOpencodeBinary() {
   return new Promise((resolve) => {
-    const proc = spawn("which", ["opencode"], { stdio: ["ignore", "pipe", "ignore"] });
+    const findCmd = process.platform === "win32" ? "where" : "which";
+    const proc = spawn(findCmd, ["opencode"], { stdio: ["ignore", "pipe", "ignore"], shell: process.platform === "win32" });
     let out = "";
     proc.stdout.on("data", (d) => (out += d));
     proc.on("close", (code) => resolve(code === 0 ? out.trim() : null));
@@ -32,6 +33,7 @@ export async function getOpencodeVersion() {
   return new Promise((resolve) => {
     const proc = spawn("opencode", ["--version"], {
       stdio: ["ignore", "pipe", "ignore"],
+      shell: process.platform === "win32",
     });
     let out = "";
     proc.stdout.on("data", (d) => (out += d));
@@ -52,6 +54,7 @@ export function runCommand(cmd, args, opts = {}) {
       stdio: ["ignore", "pipe", "pipe"],
       cwd: opts.cwd,
       env: { ...process.env, ...opts.env },
+      shell: process.platform === "win32",
     });
     let stdout = "";
     let stderr = "";
@@ -74,6 +77,7 @@ export function spawnDetached(cmd, args, opts = {}) {
     detached: true,
     cwd: opts.cwd,
     env: { ...process.env, ...opts.env },
+    shell: process.platform === "win32",
   });
   child.unref();
   return child;
