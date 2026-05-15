@@ -2,4 +2,5 @@ node_modules/
 .DS_Store
 *.log
 .generated/
+.claude/settings.local.json
 /tmp/

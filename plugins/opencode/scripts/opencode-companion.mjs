@@ -312,9 +312,10 @@ async function handleTask(argv) {
       report("investigating", "Sending task to OpenCode...");
       log(`Agent: ${agentName}, Write: ${isWrite}, Prompt: ${prompt.length} chars`);
 
-      const response = await client.sendPrompt(sessionId, prompt, {
-        agent: agentName,
-      });
+      const sendOpts = { agent: agentName };
+      if (options.model) sendOpts.model = parseModelOption(options.model);
+
+      const response = await client.sendPrompt(sessionId, prompt, sendOpts);
 
       report("finalizing", "Processing task output...");
 
@@ -384,9 +385,10 @@ async function handleTaskWorker(argv) {
       const prompt = buildTaskPrompt(taskText, { write: isWrite });
       report("investigating", "Running task...");
 
-      const response = await client.sendPrompt(sessionId, prompt, {
-        agent: agentName,
-      });
+      const sendOpts = { agent: agentName };
+      if (options.model) sendOpts.model = parseModelOption(options.model);
+
+      const response = await client.sendPrompt(sessionId, prompt, sendOpts);
 
       const text = extractResponseText(response);
       report("finalizing", "Done");
@@ -517,6 +519,17 @@ async function handleCancel(argv) {
 // ------------------------------------------------------------------
 // Helpers
 // ------------------------------------------------------------------
+
+/**
+ * Parse a "provider/model" string into the OpenCode API model object.
+ * @param {string} raw
+ * @returns {{ providerID?: string, modelID: string }}
+ */
+function parseModelOption(raw) {
+  const idx = raw.indexOf("/");
+  if (idx < 0) return { modelID: raw };
+  return { providerID: raw.slice(0, idx), modelID: raw.slice(idx + 1) };
+}
 
 /**
  * Extract text from an OpenCode API response.
